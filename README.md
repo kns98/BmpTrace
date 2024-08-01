@@ -1,1 +1,1 @@
-Approximate a bmp into shapes with pdf files using open cv contours
+Approximate an image into shapes output pdf files using open cv canny and contours
