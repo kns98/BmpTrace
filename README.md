@@ -1,1 +1,1 @@
-Approximate a bmp into shapes with pdf files
+Approximate a bmp into shapes with pdf files using open cv contours
