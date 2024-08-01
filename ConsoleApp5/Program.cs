@@ -9,7 +9,7 @@ class Program
     static void Main(string[] args)
     {
         // Load the image using OpenCV
-        string imagePath = @"c:\tmp\t.bmp";
+        string imagePath = @"c:\tmp\1.png";
         Mat image = Cv2.ImRead(imagePath, ImreadModes.Color);
 
         // Convert the image to grayscale
