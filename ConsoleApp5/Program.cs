@@ -1,7 +1,9 @@
 ﻿using OpenCvSharp;
 using PdfSharp.Pdf;
 using PdfSharp.Drawing;
+using Svg;
 using System;
+using System.IO;
 using System.Linq; // For LINQ operations on collections
 
 class Program
@@ -13,6 +15,7 @@ class Program
         double lowThreshold = 50.0;
         double highThreshold = 150.0;
         string outputPdfPath = null;
+        string outputSvgPath = null;
         string retrievalMode = "Tree";
         string approximationMode = "Simple";
         double epsilonFactor = 0.04;
@@ -34,6 +37,9 @@ class Program
                 case "--output-pdf-path":
                     outputPdfPath = args[++i];
                     break;
+                case "--output-svg-path":
+                    outputSvgPath = args[++i];
+                    break;
                 case "--retrieval-mode":
                     retrievalMode = args[++i];
                     break;
@@ -50,9 +56,9 @@ class Program
         }
 
         // Check required arguments
-        if (string.IsNullOrEmpty(imagePath) || string.IsNullOrEmpty(outputPdfPath))
+        if (string.IsNullOrEmpty(imagePath) || string.IsNullOrEmpty(outputPdfPath) || string.IsNullOrEmpty(outputSvgPath))
         {
-            Console.WriteLine("Usage: program --image-path <path> --output-pdf-path <path> [options]");
+            Console.WriteLine("Usage: program --image-path <path> --output-pdf-path <path> --output-svg-path <path> [options]");
             Console.WriteLine("Options:");
             Console.WriteLine("  --low-threshold <value>        Low threshold for Canny edge detection (default: 50)");
             Console.WriteLine("  --high-threshold <value>       High threshold for Canny edge detection (default: 150)");
@@ -62,11 +68,11 @@ class Program
             return;
         }
 
-        // Run image processing and PDF generation
-        ProcessImage(imagePath, lowThreshold, highThreshold, outputPdfPath, retrievalMode, approximationMode, epsilonFactor);
+        // Run image processing and document generation
+        ProcessImage(imagePath, lowThreshold, highThreshold, outputPdfPath, outputSvgPath, retrievalMode, approximationMode, epsilonFactor);
     }
 
-    static void ProcessImage(string imagePath, double lowThreshold, double highThreshold, string outputPdfPath, string retrievalMode, string approximationMode, double epsilonFactor)
+    static void ProcessImage(string imagePath, double lowThreshold, double highThreshold, string outputPdfPath, string outputSvgPath, string retrievalMode, string approximationMode, double epsilonFactor)
     {
         // Load the image using OpenCV
         Mat image = Cv2.ImRead(imagePath, ImreadModes.Color);
@@ -101,26 +107,38 @@ class Program
         PdfPage page = document.AddPage();
         XGraphics gfx = XGraphics.FromPdfPage(page);
 
+        // Initialize SVG content
+        var svgContent = new System.Text.StringBuilder();
+        svgContent.AppendLine($"<svg width=\"{image.Width}\" height=\"{image.Height}\" xmlns=\"http://www.w3.org/2000/svg\">");
+
         // Iterate over contours and draw each shape
         foreach (var contour in contours)
         {
             double epsilon = epsilonFactor * Cv2.ArcLength(contour, true);
-
             var approx = Cv2.ApproxPolyDP(contour, epsilon, true);
 
             if (approx.Length >= 3) // Draw only if it's a closed shape
             {
                 // Convert points for PDF rendering
-                var points = approx.Select(p => new XPoint(p.X, p.Y)).ToArray();
-                gfx.DrawPolygon(XPens.Black, points);
+                var pdfPoints = approx.Select(p => new XPoint(p.X, p.Y)).ToArray();
+                gfx.DrawPolygon(XPens.Black, pdfPoints);
+
+                // Convert points to SVG path
+                var points = string.Join(" ", approx.Select(p => $"{p.X},{p.Y}"));
+                svgContent.AppendLine($"<polygon points=\"{points}\" style=\"fill:none;stroke:black;stroke-width:1\" />");
             }
         }
+
+        svgContent.AppendLine("</svg>");
 
         // Save the PDF document
         document.Save(outputPdfPath);
         document.Close();
 
-        Console.WriteLine("PDF with shapes created successfully!");
+        // Save the SVG content to a file
+        File.WriteAllText(outputSvgPath, svgContent.ToString());
+
+        Console.WriteLine("PDF and SVG with shapes created successfully!");
     }
 
     static RetrievalModes MapRetrievalMode(string mode)
