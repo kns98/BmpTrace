@@ -1,6 +1,6 @@
 [sample svg](http://github.com/kns98/BmpTrace/blob/master/sample.svg)
 
-# Exploring Image Processing and PDF Generation with OpenCV and PdfSharp
+# Exploring Image Processing and PDF Generation with OpenCV and Pdf, Svg output.
 
 Image processing and vector graphics generation are critical areas of computer vision and document creation. The integration of OpenCvSharp and PdfSharp libraries enables developers to process images, extract contours, and visualize these contours as vector graphics within a PDF. This comprehensive guide explores the different options available in the program, detailing how they function and interact to achieve the desired outcomes.
 
