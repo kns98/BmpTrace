@@ -1,4 +1,4 @@
-![sample svg](http://github.com/kns98/BmpTrace/blob/master/sample.svg)
+[sample svg](http://github.com/kns98/BmpTrace/blob/master/sample.svg)
 
 # Exploring Image Processing and PDF Generation with OpenCV and PdfSharp
 
